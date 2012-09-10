@@ -68,6 +68,9 @@ private:
 	uint64_t _videoDroppedPacketsCount;
 	uint64_t _videoBytesCount;
 	uint64_t _videoDroppedBytesCount;
+
+	bool     _receiveAudio;
+	bool     _receiveVideo;
 protected:
 	BaseOutNetRTMPStream(BaseRTMPProtocol *pProtocol, StreamsManager *pStreamsManager,
 			uint64_t type, string name, uint32_t rtmpStreamId, uint32_t chunkSize);
@@ -104,9 +107,12 @@ public:
 	virtual bool SignalStop();
 
 	virtual void SignalStreamCompleted();
+	virtual bool ReceiveAudio(bool receiveAudio);
+	virtual bool ReceiveVideo(bool receiveVideo);
+
 private:
 	bool ChunkAndSend(uint8_t *pData, uint32_t length, IOBuffer &bucket,
-			Header &header, Channel &channel);
+			Header &header, Channel &channel, bool doRealSend = true);
 	bool AllowExecution(uint32_t totalProcessed, uint32_t dataLength, bool isAudio);
 	void InternalReset();
 };

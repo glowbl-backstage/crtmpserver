@@ -78,6 +78,8 @@ BaseOutNetRTMPStream::BaseOutNetRTMPStream(BaseRTMPProtocol *pProtocol,
 	_videoDroppedPacketsCount = 0;
 	_videoBytesCount = 0;
 	_videoDroppedBytesCount = 0;
+	_receiveAudio = true;
+	_receiveVideo = true;
 
 	InternalReset();
 }
@@ -223,8 +225,8 @@ bool BaseOutNetRTMPStream::FeedData(uint8_t *pData, uint32_t dataLength,
 
 		H_ML(_audioHeader) = totalLength;
 
-		return ChunkAndSend(pData, dataLength, _audioBucket,
-				_audioHeader, *_pChannelAudio);
+        return ChunkAndSend(pData, dataLength, _audioBucket,
+				_audioHeader, *_pChannelAudio, _receiveAudio);
 	} else {
 		if (processedLength == 0)
 			_videoPacketsCount++;
@@ -282,7 +284,7 @@ bool BaseOutNetRTMPStream::FeedData(uint8_t *pData, uint32_t dataLength,
 		H_ML(_videoHeader) = totalLength;
 
 		return ChunkAndSend(pData, dataLength, _videoBucket,
-				_videoHeader, *_pChannelVideo);
+				_videoHeader, *_pChannelVideo, _receiveVideo);
 	}
 }
 
@@ -695,16 +697,20 @@ void BaseOutNetRTMPStream::SignalStreamCompleted() {
 }
 
 bool BaseOutNetRTMPStream::ChunkAndSend(uint8_t *pData, uint32_t length,
-		IOBuffer &bucket, Header &header, Channel &channel) {
+		IOBuffer &bucket, Header &header, Channel &channel, bool doRealSend /*= true*/) {
 	if (H_ML(header) == 0) {
 		TRACK_HEADER(header, channel.lastOutProcBytes);
-		return _pRTMPProtocol->SendRawData(header, channel, NULL, 0);
+        if (doRealSend) {
+            return _pRTMPProtocol->SendRawData(header, channel, NULL, 0);
+        } else {
+            return true;
+        }
 	}
 
 	if ((_feederChunkSize == _chunkSize) &&
 			(GETAVAILABLEBYTESCOUNT(bucket) == 0)) {
 		TRACK_HEADER(header, channel.lastOutProcBytes);
-		if (!_pRTMPProtocol->SendRawData(header, channel, pData, length)) {
+		if (doRealSend && !_pRTMPProtocol->SendRawData(header, channel, pData, length)) {
 			FATAL("Unable to feed data");
 			return false;
 		}
@@ -726,7 +732,7 @@ bool BaseOutNetRTMPStream::ChunkAndSend(uint8_t *pData, uint32_t length,
 	if (availableDataInBuffer != 0) {
 		//Send data
 		TRACK_HEADER(header, channel.lastOutProcBytes);
-		if (!_pRTMPProtocol->SendRawData(header, channel,
+		if (doRealSend && !_pRTMPProtocol->SendRawData(header, channel,
 				GETIBPOINTER(bucket), availableDataInBuffer)) {
 			FATAL("Unable to send data");
 			return false;
@@ -743,7 +749,7 @@ bool BaseOutNetRTMPStream::ChunkAndSend(uint8_t *pData, uint32_t length,
 
 		//bite from the pData
 		leftOvers = leftOvers <= length ? leftOvers : length;
-		if (!_pRTMPProtocol->SendRawData(pData, leftOvers)) {
+		if (doRealSend && !_pRTMPProtocol->SendRawData(pData, leftOvers)) {
 			FATAL("Unable to send data");
 			return false;
 		}
@@ -758,7 +764,7 @@ bool BaseOutNetRTMPStream::ChunkAndSend(uint8_t *pData, uint32_t length,
 
 	while (totalAvailableBytes >= _chunkSize) {
 		TRACK_HEADER(header, channel.lastOutProcBytes);
-		if (!_pRTMPProtocol->SendRawData(header, channel, pData, _chunkSize)) {
+		if (doRealSend && !_pRTMPProtocol->SendRawData(header, channel, pData, _chunkSize)) {
 			FATAL("Unable to send data");
 			return false;
 		}
@@ -771,7 +777,7 @@ bool BaseOutNetRTMPStream::ChunkAndSend(uint8_t *pData, uint32_t length,
 
 	if (totalAvailableBytes > 0 && totalAvailableBytes == leftBytesToSend) {
 		TRACK_HEADER(header, channel.lastOutProcBytes);
-		if (!_pRTMPProtocol->SendRawData(header, channel, pData, leftBytesToSend)) {
+		if (doRealSend && !_pRTMPProtocol->SendRawData(header, channel, pData, leftBytesToSend)) {
 			FATAL("Unable to send data");
 			return false;
 		}
@@ -888,5 +894,19 @@ void BaseOutNetRTMPStream::InternalReset() {
 
 	}
 }
+
+bool BaseOutNetRTMPStream::ReceiveAudio(bool receiveAudio) {
+	_receiveAudio = receiveAudio;
+
+	return true;
+};
+
+bool BaseOutNetRTMPStream::ReceiveVideo(bool receiveVideo) {
+	_receiveVideo = receiveVideo;
+
+	return false;
+};
+
+    
 #endif /* HAS_PROTOCOL_RTMP */
 

@@ -119,6 +119,9 @@ public:
 
 	BaseStream * GetRTMPStream(uint32_t rtmpStreamId);
 	bool CloseStream(uint32_t streamId, bool createNeutralStream);
+	bool ReceiveAudio(uint32_t streamId, bool receiveAudio);
+	bool ReceiveVideo(uint32_t streamId, bool receiveVideo);
+
 	RTMPStream * CreateNeutralStream(uint32_t &streamId);
 	InNetRTMPStream * CreateINS(uint32_t channelId, uint32_t streamId, string streamName);
 	BaseOutNetRTMPStream * CreateONS(uint32_t streamId, string streamName,

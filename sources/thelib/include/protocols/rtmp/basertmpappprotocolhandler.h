@@ -172,6 +172,10 @@ public:
 			Variant &request);
 	virtual bool ProcessInvokeCloseStream(BaseRTMPProtocol *pFrom,
 			Variant &request);
+	virtual bool ProcessInvokeReceiveAudio(BaseRTMPProtocol *pFrom,
+			Variant &request);
+	virtual bool ProcessInvokeReceiveVideo(BaseRTMPProtocol *pFrom,
+			Variant &request);
 	virtual bool ProcessInvokeReleaseStream(BaseRTMPProtocol *pFrom,
 			Variant &request);
 	virtual bool ProcessInvokeDeleteStream(BaseRTMPProtocol *pFrom,
