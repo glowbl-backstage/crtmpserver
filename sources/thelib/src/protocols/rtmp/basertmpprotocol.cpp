@@ -544,6 +544,50 @@ bool BaseRTMPProtocol::CloseStream(uint32_t streamId, bool createNeutralStream) 
 	return true;
 }
 
+bool BaseRTMPProtocol::ReceiveAudio(uint32_t streamId, bool receiveAudio) {
+    //1. Validate request
+    if (streamId == 0 || streamId >= MAX_STREAMS_COUNT) {
+        FATAL("Invalid stream id: %u", streamId);
+        return false;
+    }
+
+    if (_streams[streamId] == NULL) {
+        WARN("Try to alter a NULL stream");
+        return true;
+    }
+
+    if (TAG_KIND_OF(_streams[streamId]->GetType(), ST_OUT_NET_RTMP_4_RTMP)) {
+        WARN("Handle ReceiveAudio by %s", STR(tagToString(_streams[streamId]->GetType())));
+        ((BaseOutNetRTMPStream*)_streams[streamId])->ReceiveAudio(receiveAudio);
+    } else {
+        WARN("Try to call ReceiveAudio for non-RTMP stream: %s", STR(tagToString(_streams[streamId]->GetType())));
+    }
+
+    return true;
+}
+
+bool BaseRTMPProtocol::ReceiveVideo(uint32_t streamId, bool receiveVideo) {
+    //1. Validate request
+    if (streamId == 0 || streamId >= MAX_STREAMS_COUNT) {
+        FATAL("Invalid stream id: %u", streamId);
+        return false;
+    }
+
+    if (_streams[streamId] == NULL) {
+        WARN("Try to alter a NULL stream");
+        return true;
+    }
+
+    if (TAG_KIND_OF(_streams[streamId]->GetType(), ST_OUT_NET_RTMP_4_RTMP)) {
+        WARN("Handle ReceiveVideo by %s", STR(tagToString(_streams[streamId]->GetType())));
+        ((BaseOutNetRTMPStream*)_streams[streamId])->ReceiveVideo(receiveVideo);
+    } else {
+        WARN("Try to call ReceiveVideo for non-RTMP stream: %s", STR(tagToString(_streams[streamId]->GetType())));
+    }
+
+    return true;
+}
+
 RTMPStream * BaseRTMPProtocol::CreateNeutralStream(uint32_t & streamId) {
 	if (streamId == 0) {
 		//Automatic allocation

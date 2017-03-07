@@ -786,6 +786,10 @@ bool BaseRTMPAppProtocolHandler::ProcessInvoke(BaseRTMPProtocol *pFrom,
 		return ProcessInvokeSeek(pFrom, request);
 	} else if (functionName == RM_INVOKE_FUNCTION_CLOSESTREAM) {
 		return ProcessInvokeCloseStream(pFrom, request);
+	} else if (functionName == RM_INVOKE_FUNCTION_RECEIVEAUDIO) {
+		return ProcessInvokeReceiveAudio(pFrom, request);
+	} else if (functionName == RM_INVOKE_FUNCTION_RECEIVEVIDEO) {
+		return ProcessInvokeReceiveVideo(pFrom, request);
 	} else if (functionName == RM_INVOKE_FUNCTION_RELEASESTREAM) {
 		return ProcessInvokeReleaseStream(pFrom, request);
 	} else if (functionName == RM_INVOKE_FUNCTION_DELETESTREAM) {
@@ -1224,6 +1228,21 @@ bool BaseRTMPAppProtocolHandler::ProcessInvokePause(BaseRTMPProtocol *pFrom,
 bool BaseRTMPAppProtocolHandler::ProcessInvokeCloseStream(BaseRTMPProtocol *pFrom,
 		Variant & request) {
 	return pFrom->CloseStream(VH_SI(request), true);
+}
+
+bool BaseRTMPAppProtocolHandler::ProcessInvokeReceiveAudio(BaseRTMPProtocol *pFrom,
+        Variant & request) {
+
+    Variant vEnabled = M_INVOKE_PARAM(request, 1);
+
+    return pFrom->ReceiveAudio(VH_SI(request), (bool)vEnabled);
+}
+
+bool BaseRTMPAppProtocolHandler::ProcessInvokeReceiveVideo(BaseRTMPProtocol *pFrom,
+        Variant & request) {
+    Variant vEnabled = M_INVOKE_PARAM(request, 1);
+
+    return pFrom->ReceiveVideo(VH_SI(request), (bool)vEnabled);
 }
 
 bool BaseRTMPAppProtocolHandler::ProcessInvokeReleaseStream(BaseRTMPProtocol *pFrom,
